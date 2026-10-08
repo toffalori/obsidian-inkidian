@@ -1,6 +1,6 @@
 # Inkidian File Format (`.inkd`)
 
-**Format version 1** · Status: **draft until milestone M4**. It may still change, and every change is listed in the [changelog](#10-changelog).
+**Format version 1** · Status: **final**. New optional fields may still be added (see [§2](#2-versioning-and-compatibility)), and every change is listed in the [changelog](#10-changelog).
 
 An `.inkd` file holds one handwritten note: a list of fixed-size pages with ink strokes on them. The file is plain JSON, so any program can read and render it without dependencies. That includes the Obsidian plugin.
 

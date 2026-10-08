@@ -8,8 +8,8 @@ Inkidian saves every note as an `.inkd` file next to your Markdown. This plugin 
 
 - **Open `.inkd` notes** in their own view, page by page, with the paper (blank, lined, grid or dots) they were written on.
 - **Embed notes** in Markdown with `![[Lecture 4.inkd]]`. The embed shows the first page.
-- **Edit in Inkidian** (iPad): opens the note in the app. Back in Obsidian, the note updates on its own.
-- **Annotate in Inkidian** (iPad): opens a PDF or image from your vault in the app. The ink is saved into the PDF as standard annotations, so Obsidian's PDF viewer shows it too.
+- **Edit in Inkidian** (iPad): the round nib button in the top right corner of a note, and of every embedded note, opens it in the app. Back in Obsidian, the note updates on its own.
+- **Annotate in Inkidian** (iPad): the same button on PDFs and images, the file menu or a command opens them in the app. The ink is saved into the PDF as standard annotations, so Obsidian's PDF viewer shows it too.
 - **New note** command (iPad): starts a new note in Inkidian, in the open note's folder or a default folder.
 - **Dark mode**: choose how pages look when Obsidian uses a dark theme.
 
