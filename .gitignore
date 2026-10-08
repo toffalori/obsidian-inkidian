@@ -1,0 +1,15 @@
+# npm
+node_modules/
+
+# Built by GitHub Actions and attached to each release, not committed
+main.js
+*.map
+
+# Obsidian
+data.json
+
+# Editors and macOS
+.vscode/
+.idea/
+*.iml
+.DS_Store

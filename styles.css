@@ -1,0 +1,97 @@
+.inkidian-view {
+  background: var(--background-secondary);
+}
+
+.inkidian-pages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 24px 16px;
+}
+
+.inkidian-page {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Inverting keeps hues but turns black ink white and the paper dark. */
+.theme-dark .inkidian-invert .inkidian-page {
+  filter: invert(1) hue-rotate(180deg);
+  box-shadow: none;
+}
+
+.inkidian-message {
+  padding: 2em;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Embeds keep the cropped size of the ink, up to the note's width. */
+.inkidian-embed .inkidian-page {
+  width: auto;
+  max-width: 100%;
+  border-radius: 4px;
+}
+
+.inkidian-embed-footer {
+  margin-top: 4px;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+/* iPad: the nib in the top right corner of a note, visible while scrolling. */
+.inkidian-edit-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px 0;
+  pointer-events: none;
+}
+
+/* iPad: the same round nib opens the app from notes, PDFs, images and embeds,
+   in their top right corner; the view header needs two taps (D18). */
+.inkidian-app-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+}
+
+.inkidian-app-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.inkidian-annotatable {
+  position: relative;
+}
+
+.internal-embed.image-embed.inkidian-annotatable {
+  display: inline-block;
+}
+
+.inkidian-corner {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+}
+
+/* In a PDF, at the right end of its toolbar. */
+.pdf-toolbar-right .inkidian-app-button {
+  width: 30px;
+  height: 30px;
+  margin-left: 6px;
+}

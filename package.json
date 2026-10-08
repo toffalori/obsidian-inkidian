@@ -1,0 +1,24 @@
+{
+  "name": "obsidian-inkidian",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Inkidian plugin for Obsidian",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc && node esbuild.config.mjs production",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "ajv": "^8.20.0",
+    "esbuild": "^0.28.2",
+    "obsidian": "^1.13.1",
+    "pdfjs-dist": "5.3.31",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  },
+  "dependencies": {
+    "perfect-freehand": "^1.2.3"
+  }
+}
