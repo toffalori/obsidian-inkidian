@@ -12,7 +12,8 @@ describe("ink in PDFs", () => {
     expect(pdf.numPages).toBe(2);
 
     const page = await pdf.getPage(1);
-    const ink = (await page.getAnnotations()).filter((annotation) => annotation.subtype === "Ink");
+    const annotations = (await page.getAnnotations()) as { subtype: string; hasAppearance: boolean }[];
+    const ink = annotations.filter((annotation) => annotation.subtype === "Ink");
     expect(ink).toHaveLength(21);
     expect(ink.every((annotation) => annotation.hasAppearance)).toBe(true);
 

@@ -29,7 +29,7 @@ export class InkidianSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Default folder")
-      .setDesc("Where “New note” creates notes when no note is open. Otherwise it uses the open note's folder.")
+      .setDesc("The folder for new notes when no note is open. Otherwise new notes go into the open note's folder.")
       .addText((text) =>
         text
           .setPlaceholder("Handwriting")
@@ -42,7 +42,7 @@ export class InkidianSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Show embedded notes")
-      .setDesc("Show ![[Note.inkd]] in Markdown notes as a picture of its first page. Uses an unofficial Obsidian feature; turn it off if embeds misbehave. Takes effect after restarting Obsidian.")
+      .setDesc("Show embedded .inkd notes in Markdown notes as a picture of their first page. Uses an unofficial Obsidian feature; turn it off if embeds misbehave. Takes effect after restarting Obsidian.")
       .addToggle((toggle) =>
         toggle.setValue(this.plugin.settings.embeds).onChange(async (value) => {
           this.plugin.settings.embeds = value;

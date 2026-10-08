@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { parseInkd } from "../src/inkd";
-import { readSample, sampleNames } from "./samples";
+import { readSample, readSampleJson, sampleNames, type SampleJson } from "./samples";
 
-const minimal = () => JSON.parse(readSample("minimal.inkd"));
+const minimal = () => readSampleJson("minimal.inkd");
 const parse = (json: unknown) => parseInkd(JSON.stringify(json));
 
 describe("parseInkd", () => {
   it.each(sampleNames)("reads %s", (name) => {
     const text = readSample(name);
-    const raw = JSON.parse(text);
+    const raw = readSampleJson(name);
     const result = parseInkd(text);
     if (!result.ok) throw new Error(result.message);
     expect(result.document.pages).toHaveLength(raw.pages.length);
-    expect(result.document.pages.map((page) => page.strokes.length)).toEqual(raw.pages.map((page: { strokes: unknown[] }) => page.strokes.length));
+    expect(result.document.pages.map((page) => page.strokes.length)).toEqual(raw.pages.map((page) => page.strokes.length));
     expect(result.document.width).toBe(raw.page.width);
   });
 
@@ -34,8 +34,8 @@ describe("parseInkd", () => {
       { tool: "brush", color: "red", opacity: 7, baseWidth: -1, points: [[1, 2], [3, 4, 0.8, 0.1, 0, 1.5, 99], ["x", 5], [6]] },
       { tool: "pen", color: "#112233", opacity: 1, baseWidth: 2, points: [] },
       "not a stroke",
-    ];
-    json.pages.push({ background: { type: "dots", spacing: 20, color: "#ABCDEF" } });
+    ] as unknown as SampleJson["pages"][number]["strokes"];
+    json.pages.push({ background: { type: "dots", spacing: 20, color: "#ABCDEF" } } as SampleJson["pages"][number]);
 
     const result = parse(json);
     if (!result.ok) throw new Error(result.message);

@@ -18,15 +18,18 @@ export default class InkidianPlugin extends Plugin {
   private readonly annotatedViews = new WeakSet<View>();
   private readonly viewButtons = new WeakMap<View, HTMLAnchorElement>();
   private decorateFrame = 0;
+  /** iPad: the modification time of each PDF or image the app sent back, read from disk. */
+  private readonly savedInApp = new Map<string, number>();
 
   async onload(): Promise<void> {
-    this.settings = { ...DEFAULT_SETTINGS, ...(await this.loadData()) };
+    this.settings = { ...DEFAULT_SETTINGS, ...((await this.loadData()) as Partial<InkidianSettings> | null) };
     addIcon("inkidian", NIB_ICON);
     this.registerView(VIEW_TYPE_INKD, (leaf) => new InkdView(leaf, this));
     this.registerExtensions(["inkd"], VIEW_TYPE_INKD);
     if (this.settings.embeds) this.registerEmbeds();
     this.addCommand({ id: "new-note", name: "New note", icon: "inkidian", callback: () => this.newNote() });
     this.registerAnnotateActions();
+    if (isIPad()) this.versionResourcePaths();
     this.registerObsidianProtocolHandler("inkidian", (params) => void this.openFromApp(params.file));
     this.addSettingTab(new InkidianSettingTab(this.app, this));
     this.app.workspace.onLayoutReady(() => void this.showSyncNoticeOnce());
@@ -66,7 +69,7 @@ export default class InkidianPlugin extends Plugin {
     );
     this.addCommand({
       id: "annotate-pdf",
-      name: "Annotate PDF or image in Inkidian",
+      name: "Annotate PDF or image",
       icon: "inkidian",
       checkCallback: (checking) => {
         const file = this.app.workspace.getActiveFile();
@@ -139,14 +142,14 @@ export default class InkidianPlugin extends Plugin {
     });
     this.register(() => {
       observer.disconnect();
-      cancelAnimationFrame(this.decorateFrame);
+      window.cancelAnimationFrame(this.decorateFrame);
     });
   }
 
   /** Once per frame at most, however much Obsidian changes the page. */
   private scheduleDecorate(): void {
     if (this.decorateFrame) return;
-    this.decorateFrame = requestAnimationFrame(() => {
+    this.decorateFrame = window.requestAnimationFrame(() => {
       this.decorateFrame = 0;
       this.addAnnotateViewActions();
       this.decorateEmbeds();
@@ -161,6 +164,27 @@ export default class InkidianPlugin extends Plugin {
       embed.addClass("inkidian-annotatable");
       appButton(embed, "Annotate in Inkidian", openInInkidianUrl(this.app.vault.getName(), file.path)).addClass("inkidian-corner");
     }
+  }
+
+  /**
+   * On iPad, Obsidian gives a file the same resource URL after it changed (on the
+   * desktop the URL ends in `?<mtime>`), so the web view keeps showing a PDF or
+   * image as it was before the app saved it, until Obsidian restarts (D31). This
+   * adds the modification time on iPad too: Obsidian's, or the one read from disk
+   * when the app sent the file back, if that is newer.
+   */
+  private versionResourcePaths(): void {
+    const adapter = this.app.vault.adapter;
+    const getResourcePath = adapter.getResourcePath.bind(adapter);
+    adapter.getResourcePath = (path: string): string => {
+      const url = getResourcePath(path);
+      const file = this.app.vault.getAbstractFileByPath(path);
+      const mtime = Math.max(file instanceof TFile ? file.stat.mtime : 0, this.savedInApp.get(path) ?? 0);
+      return mtime && !url.includes("?") ? `${url}?${mtime}` : url;
+    };
+    this.register(() => {
+      adapter.getResourcePath = getResourcePath;
+    });
   }
 
   /** The note an embed is in, to resolve its link the way Obsidian does. */
@@ -186,6 +210,11 @@ export default class InkidianPlugin extends Plugin {
     if (!file) {
       new Notice(`Inkidian: “${normalized}” isn't in this vault.`);
       return;
+    }
+    // Obsidian may not have noticed the change yet, so it would keep the old URL.
+    if (isIPad() && isAnnotatable(file)) {
+      const stat = await this.app.vault.adapter.stat(normalized);
+      if (stat) this.savedInApp.set(normalized, stat.mtime);
     }
     // A PDF or image that is open already shows the new ink right away, the way
     // Obsidian reloads it when it notices the change itself.

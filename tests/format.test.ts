@@ -1,11 +1,11 @@
 import { readFileSync } from "node:fs";
 import Ajv2020 from "ajv/dist/2020";
 import { describe, expect, it } from "vitest";
-import { formatDir, sampleNames as samples } from "./samples";
+import { formatDir, readSampleJson, sampleNames as samples } from "./samples";
 
-const readJSON = (path: string) => JSON.parse(readFileSync(formatDir + path, "utf8"));
+const schema = JSON.parse(readFileSync(formatDir + "inkd.schema.json", "utf8")) as object;
 
-const validate = new Ajv2020({ allErrors: true }).compile(readJSON("inkd.schema.json"));
+const validate = new Ajv2020({ allErrors: true }).compile(schema);
 
 describe("format samples", () => {
   it("exist", () => {
@@ -13,13 +13,13 @@ describe("format samples", () => {
   });
 
   it.each(samples)("%s matches the schema", (name) => {
-    validate(readJSON("samples/" + name));
+    validate(readSampleJson(name));
     expect(validate.errors).toBeNull();
   });
 });
 
 describe("schema", () => {
-  const minimal = () => readJSON("samples/minimal.inkd");
+  const minimal = () => readSampleJson("minimal.inkd");
 
   it("rejects a newer format version", () => {
     const doc = minimal();

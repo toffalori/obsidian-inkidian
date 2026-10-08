@@ -7,3 +7,11 @@ const nextToPlugin = fileURLToPath(new URL("../format/", import.meta.url));
 export const formatDir = existsSync(nextToPlugin) ? nextToPlugin : fileURLToPath(new URL("../../format/", import.meta.url));
 export const sampleNames = readdirSync(formatDir + "samples").filter((name) => name.endsWith(".inkd")).sort();
 export const readSample = (name: string) => readFileSync(formatDir + "samples/" + name, "utf8");
+
+/** A sample note as plain JSON, loose enough for tests that break it on purpose. */
+export interface SampleJson {
+  formatVersion: number;
+  page: { width: number; height: number };
+  pages: { background?: unknown; strokes: { tool: string; points: unknown[][] }[] }[];
+}
+export const readSampleJson = (name: string) => JSON.parse(readSample(name)) as SampleJson;
