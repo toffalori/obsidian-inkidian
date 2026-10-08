@@ -19,8 +19,6 @@ The plugin makes no network requests and collects no data.
 
 Search for **Inkidian** in Settings › Community plugins › Browse, then install and enable it.
 
-Until the plugin is listed there, install it with [BRAT](https://github.com/TfTHacker/obsidian42-brat): install and enable BRAT, run the command *BRAT: Add a beta plugin for testing* and enter `toffalori/obsidian-inkidian`.
-
 The Inkidian iPad app is in public beta on TestFlight: [inkidian.com](https://inkidian.com).
 
 ## Obsidian Sync
