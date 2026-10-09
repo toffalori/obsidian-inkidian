@@ -23,6 +23,6 @@ export async function waitFor<T>(find: () => T | null, timeoutMs: number, interv
   for (;;) {
     const found = find();
     if (found !== null || Date.now() >= deadline) return found;
-    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    await new Promise((resolve) => window.setTimeout(resolve, intervalMs));
   }
 }

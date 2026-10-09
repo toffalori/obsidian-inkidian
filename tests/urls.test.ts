@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { folderForNewNote, newInInkidianUrl, openInInkidianUrl, waitFor } from "../src/urls";
 
 // The iOS tests (InkidianURLTests.swift) parse exactly these strings.
@@ -21,6 +21,9 @@ describe("links to the iPad app", () => {
 });
 
 describe("waitFor", () => {
+  // Obsidian runs it in a window; the tests run in Node.
+  beforeAll(() => vi.stubGlobal("window", globalThis));
+
   it("returns as soon as the value shows up", async () => {
     let calls = 0;
     const start = Date.now();

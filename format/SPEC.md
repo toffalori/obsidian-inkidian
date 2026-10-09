@@ -169,14 +169,15 @@ The iPad app also writes ink into PDF files in the vault (milestone M7). The fil
 
 ### 9.2 One ink annotation per stroke
 
-Each stroke is an annotation of subtype `/Ink` (ISO 32000-2 §12.5.6.13) on its page. Inkidian only removes and adds its own annotations; all others stay.
+Each stroke is an annotation on its page: pen and pencil strokes of subtype `/Ink` (ISO 32000-2 §12.5.6.13), marker strokes of subtype `/Highlight` (§12.5.6.10), so that viewers which draw highlights themselves, such as Preview, multiply them with the page as well. Inkidian only removes and adds its own annotations; all others stay. Readers recognize Inkidian's annotations by `/NM` or `/InkidianStroke`, whatever their subtype.
 
 | Key | Value |
 |---|---|
 | `/NM` | `(inkidian:<stroke id>)`. This prefix marks Inkidian's annotations. |
 | `/Rect` | The ink's bounding box in default user space, including half the stroke width. |
 | `/InkList` | One path: the stroke's points in default user space. |
-| `/C`, `/CA` | The stroke's color (DeviceRGB) and its alpha from [§8](#8-rendering-model) at the mean pressure. |
+| `/C`, `/CA` | The stroke's color (DeviceRGB) and its alpha from [§8](#8-rendering-model) at the mean pressure. For a `/Highlight`, `/C` is that color over white, `1 − alpha · (1 − c)` per component, and `/CA` is `1`: multiplied with the page, it looks the same. |
+| `/QuadPoints` | `/Highlight` only: quadrilaterals that cover the stroke, upper edge first (start, end), then the lower edge. Preview fills each one's bounding box, so a quadrilateral covers as much of the stroke as keeps that box within 0.5 pt of it: one for a straight line across, many short ones along diagonals and curves. The stroke's ends reach about half its width further, like round caps. |
 | `/BS` | `<< /W w >>`, where `w` is `baseWidth` in user space units. |
 | `/F` | `4` (print the annotation). |
 | `/P` | The page. |
@@ -202,3 +203,4 @@ Each stroke is an annotation of subtype `/Ink` (ISO 32000-2 §12.5.6.13) on its 
   - Pen width is `baseWidth · (0.25 + 1.5·p)`, which fits PencilKit's tapering.
   - For pencil and marker, `p` sets darkness instead of width.
 - **v1** (2026-10-07, M7): §9 Ink in PDF files. The `.inkd` format itself is unchanged.
+- **v1** (2026-10-08): §9.2 Marker strokes in PDFs are `/Highlight` annotations with `/QuadPoints`, so Preview shows them like Obsidian does. Readers accept both subtypes.

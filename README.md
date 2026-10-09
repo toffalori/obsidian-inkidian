@@ -1,33 +1,49 @@
 # Inkidian for Obsidian
 
-Shows handwritten notes from [Inkidian](https://inkidian.com), the Apple Pencil app for iPad, right in your vault: on iPad, Mac, Windows and Linux. On the iPad it also opens notes, PDFs and images in Inkidian for editing.
+**Write in your Obsidian vault with Apple Pencil.**
 
-Inkidian saves every note as an `.inkd` file next to your Markdown. This plugin reads those files; it doesn't need the app to show them.
+![A handwritten lecture note in Inkidian on iPad, with a highlight, arrows and a sketched chart](https://raw.githubusercontent.com/toffalori/obsidian-inkidian/main/images/hero.jpg)
 
-## Features
+[Inkidian](https://inkidian.com) is a native iPad app for handwritten notes and PDF annotation. It saves everything as plain files in your vault, right next to your Markdown. This free plugin shows your handwritten notes in Obsidian on iPad, Mac, Windows and Linux. On the iPad, one tap opens a note in Inkidian so you can keep writing.
 
-- **Open `.inkd` notes** in their own view, page by page, with the paper (blank, lined, grid or dots) they were written on.
-- **Embed notes** in Markdown with `![[Lecture 4.inkd]]`. The embed shows the first page.
+**[Get Inkidian for iPad →](https://inkidian.com)** Free during the beta.
+
+## See it in action
+
+![A handwritten note open in Obsidian; one tap opens it in Inkidian, Apple Pencil adds a line, and back in Obsidian the note is already updated](https://raw.githubusercontent.com/toffalori/obsidian-inkidian/main/images/demo.gif)
+
+## Why Inkidian
+
+- **Ink right under the tip.** Drawing plugins for Obsidian draw inside a web view. Inkidian is a native app built on PencilKit, the engine Apple uses in Notes and Markup, so the line stays right under Apple Pencil.
+- **Your notes stay files in your vault.** Nothing to import, export or sign up for. Every note is an `.inkd` file next to your Markdown, and it syncs wherever your vault already syncs: iCloud, Obsidian Sync or anything else.
+- **PDFs and images, annotated in place.** The ink goes into the PDF as standard annotations, so Obsidian, Preview and Acrobat show it too. For images, replace the original or keep a copy.
+- **An open format.** `.inkd` is plain JSON with a public spec, so your notes stay readable, with or without Inkidian.
+- **Private.** No account, no server. The plugin makes no network requests and collects no data.
+
+![An annotated wireframe image in Obsidian, with red circles and notes written in Inkidian](https://raw.githubusercontent.com/toffalori/obsidian-inkidian/main/images/annotate.jpg)
+
+![A meeting note in Obsidian that embeds the annotated wireframe](https://raw.githubusercontent.com/toffalori/obsidian-inkidian/main/images/embed.jpg)
+
+## What the plugin does
+
+- **Opens `.inkd` notes** in their own view, page by page, on the paper they were written on: blank, lined, grid or dots.
+- **Embeds notes** in Markdown with `![[Lecture 4.inkd]]`. The embed shows the first page.
 - **Edit in Inkidian** (iPad): the round nib button in the top right corner of a note, and of every embedded note, opens it in the app. Back in Obsidian, the note updates on its own.
-- **Annotate in Inkidian** (iPad): the same button on PDFs and images, the file menu or a command opens them in the app. The ink is saved into the PDF as standard annotations, so Obsidian's PDF viewer shows it too.
+- **Annotate in Inkidian** (iPad): the same button on PDFs and images, the file menu or a command opens them in the app. Every note that embeds the file shows the ink.
 - **New note** command (iPad): starts a new note in Inkidian, in the open note's folder or a default folder.
-- **Dark mode**: choose how pages look when Obsidian uses a dark theme.
+- **Dark mode**: dark paper with light ink, or white paper, when Obsidian uses a dark theme.
 
-The plugin makes no network requests and collects no data.
+## Get started
 
-## Install
+1. In Obsidian, open **Settings › Community plugins › Browse**, search for **Inkidian**, then install and enable it.
+2. Get Inkidian for iPad at [inkidian.com](https://inkidian.com). It needs an iPad with Apple Pencil and iPadOS 18 or later.
+3. In Inkidian, pick your vault folder once. From then on both apps work on the same files.
 
-Search for **Inkidian** in Settings › Community plugins › Browse, then install and enable it.
-
-The Inkidian iPad app is in public beta on TestFlight: [inkidian.com](https://inkidian.com).
-
-## Obsidian Sync
-
-Obsidian Sync skips unknown file types by default. Turn on **Sync all other types** in Settings › Sync so your `.inkd` notes reach your other devices.
+**Using Obsidian Sync?** Turn on **Sync all other types** in Settings › Sync so your `.inkd` notes reach your other devices. Obsidian uploads changes while it's open, so open it once after writing.
 
 ## The `.inkd` format
 
-An `.inkd` file is plain JSON. The open specification is in [`format/SPEC.md`](format/SPEC.md), with a JSON Schema and sample files, so any program can read your notes, with or without Inkidian.
+An `.inkd` file is plain JSON. The open specification is in [`format/SPEC.md`](https://github.com/toffalori/obsidian-inkidian/blob/main/format/SPEC.md), with a JSON Schema and sample files, so any program can read your notes, with or without Inkidian.
 
 ## Development
 
@@ -44,4 +60,4 @@ Releases are built by GitHub Actions: pushing a tag that matches the version in 
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/toffalori/obsidian-inkidian/blob/main/LICENSE)
