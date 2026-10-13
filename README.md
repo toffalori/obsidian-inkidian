@@ -6,7 +6,7 @@
 
 [Inkidian](https://inkidian.com) is a native iPad app for handwritten notes and PDF annotation. It saves everything as plain files in your vault, right next to your Markdown. This free plugin shows your handwritten notes in Obsidian on iPad, Mac, Windows and Linux. On the iPad, one tap opens a note in Inkidian so you can keep writing.
 
-**[Get Inkidian for iPad →](https://inkidian.com)** Free during the beta.
+**[Get Inkidian for iPad →](https://inkidian.com)** Free for 14 days, then a one-time purchase.
 
 ## See it in action
 
