@@ -1,4 +1,4 @@
-import { type App, PluginSettingTab, Setting, type SettingDefinitionItem } from "obsidian";
+import { type App, Platform, PluginSettingTab, Setting, type SettingDefinitionItem } from "obsidian";
 import type InkidianPlugin from "./main";
 
 export interface InkidianSettings {
@@ -8,6 +8,10 @@ export interface InkidianSettings {
   darkMode: "invert" | "paper";
   /** Show ![[Note.inkd]] as a picture in Markdown notes. */
   embeds: boolean;
+  /** Show the notes the iPad app sends over the local network (D40). */
+  livePreview: boolean;
+  /** The key paired iPads seal their notes with, base64url; made when the live preview is first turned on. */
+  liveKey: string;
   syncNoticeShown: boolean;
 }
 
@@ -15,6 +19,8 @@ export const DEFAULT_SETTINGS: InkidianSettings = {
   defaultFolder: "Handwriting",
   darkMode: "invert",
   embeds: true,
+  livePreview: false,
+  liveKey: "",
   syncNoticeShown: false,
 };
 
@@ -26,6 +32,16 @@ const EMBEDS = {
   name: "Show embedded notes",
   desc: "Show embedded .inkd notes in Markdown notes as a picture of their first page. Uses an unofficial Obsidian feature; turn it off if embeds misbehave. Takes effect after restarting Obsidian.",
 };
+const LIVE_PREVIEW = {
+  name: "Live preview from iPad (experimental)",
+  desc: "Shows what you write in Inkidian on a paired iPad in the same network right away, before Obsidian Sync brings it. Turning it on shows a QR code to scan with the iPad's camera.",
+};
+const PAIR = {
+  name: "Pair an iPad",
+  desc: "Shows the QR code again, for another iPad or to make a new one.",
+};
+/** The live preview needs macOS's Bonjour for now (D40). */
+const hasLivePreview = () => Platform.isDesktopApp && Platform.isMacOS;
 const DARK_MODE = {
   name: "Pages in dark mode",
   desc: "How handwritten notes look when Obsidian uses a dark theme.",
@@ -42,6 +58,9 @@ export class InkidianSettingTab extends PluginSettingTab {
     return [
       { ...DEFAULT_FOLDER, control: { type: "text", key: "defaultFolder", placeholder: "Handwriting" } },
       { ...EMBEDS, control: { type: "toggle", key: "embeds" } },
+      ...(hasLivePreview()
+        ? [{ ...LIVE_PREVIEW, control: { type: "toggle" as const, key: "livePreview" } }, { ...PAIR, action: () => this.plugin.showPairing() }]
+        : []),
       { name: DARK_MODE.name, desc: DARK_MODE.desc, control: { type: "dropdown", key: "darkMode", options: DARK_MODE.options } },
     ];
   }
@@ -50,6 +69,7 @@ export class InkidianSettingTab extends PluginSettingTab {
     const { settings } = this.plugin;
     if (key === "defaultFolder") settings.defaultFolder = String(value).trim();
     else if (key === "embeds") settings.embeds = value === true;
+    else if (key === "livePreview") return this.plugin.setLivePreview(value === true);
     else if (key === "darkMode") settings.darkMode = value === "paper" ? "paper" : "invert";
     await this.plugin.saveSettings({ rerender: key === "darkMode" });
   }
@@ -81,6 +101,19 @@ export class InkidianSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         }),
       );
+
+    if (hasLivePreview()) {
+      new Setting(containerEl)
+        .setName(LIVE_PREVIEW.name)
+        .setDesc(LIVE_PREVIEW.desc)
+        .addToggle((toggle) =>
+          toggle.setValue(this.plugin.settings.livePreview).onChange((value) => this.plugin.setLivePreview(value)),
+        );
+      new Setting(containerEl)
+        .setName(PAIR.name)
+        .setDesc(PAIR.desc)
+        .addButton((button) => button.setButtonText("Show QR code").onClick(() => this.plugin.showPairing()));
+    }
 
     new Setting(containerEl)
       .setName(DARK_MODE.name)

@@ -1,9 +1,11 @@
-import { addIcon, type Component, FileView, getLinkpath, MarkdownView, normalizePath, Notice, Platform, Plugin, TFile, type View } from "obsidian";
+import { addIcon, type Component, type Editor, FileView, getLinkpath, MarkdownView, normalizePath, Notice, Platform, Plugin, TFile, type View } from "obsidian";
 import { addHeaderAction, appButton } from "./actions";
 import { isIPad } from "./platform";
 import { InkdEmbed } from "./embed";
+import { LiveNotes } from "./live";
+import { newPairingKey, PairingModal } from "./pairing";
 import { DEFAULT_SETTINGS, InkidianSettingTab, type InkidianSettings } from "./settings";
-import { folderForNewNote, newInInkidianUrl, openInInkidianUrl, waitFor } from "./urls";
+import { folderForNewNote, newInInkidianUrl, newNoteName, openInInkidianUrl, pairInInkidianUrl, waitFor } from "./urls";
 import { InkdView, VIEW_TYPE_INKD } from "./view";
 
 /** The fountain nib of the app icon, in Obsidian's 100×100 icon box. */
@@ -20,6 +22,8 @@ export default class InkidianPlugin extends Plugin {
   private decorateFrame = 0;
   /** iPad: the modification time of each PDF or image the app sent back, read from disk. */
   private readonly savedInApp = new Map<string, number>();
+  /** Notes the iPad app sends as it saves them (D40). */
+  readonly live = new LiveNotes(this.app.vault.getName());
 
   async onload(): Promise<void> {
     this.settings = { ...DEFAULT_SETTINGS, ...((await this.loadData()) as Partial<InkidianSettings> | null) };
@@ -28,11 +32,21 @@ export default class InkidianPlugin extends Plugin {
     this.registerExtensions(["inkd"], VIEW_TYPE_INKD);
     if (this.settings.embeds) this.registerEmbeds();
     this.addCommand({ id: "new-note", name: "New note", icon: "inkidian", callback: () => this.newNote() });
+    this.addCommand({
+      id: "new-note-at-cursor",
+      name: "New note at cursor",
+      icon: "inkidian",
+      editorCallback: (editor, context) => this.newNoteAtCursor(editor, context.file),
+    });
     this.registerAnnotateActions();
     if (isIPad()) this.versionResourcePaths();
     this.registerObsidianProtocolHandler("inkidian", (params) => void this.openFromApp(params.file));
     this.addSettingTab(new InkidianSettingTab(this.app, this));
     this.app.workspace.onLayoutReady(() => void this.showSyncNoticeOnce());
+    this.app.workspace.onLayoutReady(() => this.updateLivePreview());
+    this.register(() => this.live.stop());
+    // Obsidian may quit without unloading plugins; the Bonjour process must end too.
+    this.registerDomEvent(window, "beforeunload", () => this.live.stop());
   }
 
   async saveSettings({ rerender = false } = {}): Promise<void> {
@@ -41,6 +55,41 @@ export default class InkidianPlugin extends Plugin {
     for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_INKD)) {
       if (leaf.view instanceof InkdView) leaf.view.rerender();
     }
+  }
+
+  /** Starts or stops the live preview from the iPad (D40). Mac only: it needs macOS's Bonjour. */
+  updateLivePreview(): void {
+    if (this.settings.livePreview && this.settings.liveKey && Platform.isDesktopApp && Platform.isMacOS) {
+      this.live.start({ net: require("net"), spawn: require("child_process").spawn, crypto: require("crypto") }, this.settings.liveKey);
+    } else {
+      this.live.stop();
+    }
+  }
+
+  /** Turning the live preview on makes a pairing key, if there's none yet, and shows its QR code. */
+  async setLivePreview(on: boolean): Promise<void> {
+    this.settings.livePreview = on;
+    if (on && !this.settings.liveKey) this.settings.liveKey = newPairingKey();
+    await this.saveSettings();
+    this.updateLivePreview();
+    if (on) this.showPairing();
+  }
+
+  /** The QR code an iPad scans to pair with this Mac. */
+  showPairing(): void {
+    if (!this.settings.livePreview || !this.settings.liveKey) {
+      void this.setLivePreview(true);
+      return;
+    }
+    new PairingModal(this.app, pairInInkidianUrl(this.app.vault.getName(), this.settings.liveKey), () => void this.renewPairing()).open();
+  }
+
+  /** A new key: iPads paired with the old one can't send anymore. */
+  private async renewPairing(): Promise<void> {
+    this.settings.liveKey = newPairingKey();
+    await this.saveSettings();
+    this.updateLivePreview();
+    this.showPairing();
   }
 
   /**
@@ -237,6 +286,15 @@ export default class InkidianPlugin extends Plugin {
     if (!this.canOpenApp()) return;
     const folder = this.app.workspace.getActiveFile()?.parent?.path ?? null;
     openExternal(newInInkidianUrl(this.app.vault.getName(), folderForNewNote(folder, this.settings.defaultFolder)));
+  }
+
+  /** New note, with its embed at the cursor: the plugin names the note, so it can link it first. */
+  newNoteAtCursor(editor: Editor, file: TFile | null): void {
+    if (!this.canOpenApp()) return;
+    const folder = folderForNewNote(file?.parent?.path ?? null, this.settings.defaultFolder);
+    const name = newNoteName(new Date(), (name) => this.app.vault.getAbstractFileByPath(normalizePath(`${folder}/${name}.inkd`)) !== null);
+    editor.replaceSelection(`![[${name}.inkd]]`);
+    openExternal(newInInkidianUrl(this.app.vault.getName(), folder, name));
   }
 
   /** The app exists only on iPad; elsewhere explain instead (PLAN §6.3). */

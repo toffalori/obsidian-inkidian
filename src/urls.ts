@@ -5,8 +5,26 @@ export function openInInkidianUrl(vault: string, path: string): string {
 }
 
 /** Without a name the app names the note after the current time. */
-export function newInInkidianUrl(vault: string, folder: string): string {
-  return `inkidian://new?vault=${encodeURIComponent(vault)}&folder=${encodeURIComponent(folder)}`;
+export function newInInkidianUrl(vault: string, folder: string, name?: string): string {
+  const url = `inkidian://new?vault=${encodeURIComponent(vault)}&folder=${encodeURIComponent(folder)}`;
+  return name === undefined ? url : `${url}&name=${encodeURIComponent(name)}`;
+}
+
+/**
+ * The name the app gives a new note (`VaultFiles.defaultName`, in English), with
+ * a number when it's taken, as the app does.
+ */
+export function newNoteName(now: Date, isTaken: (name: string) => boolean): string {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  const base = `Note ${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}.${pad(now.getMinutes())}`;
+  let name = base;
+  for (let number = 2; isTaken(name); number++) name = `${base} ${number}`;
+  return name;
+}
+
+/** The link in the pairing QR code: the iPad stores the key for this vault (D40). */
+export function pairInInkidianUrl(vault: string, key: string): string {
+  return `inkidian://pair?vault=${encodeURIComponent(vault)}&key=${encodeURIComponent(key)}`;
 }
 
 /**

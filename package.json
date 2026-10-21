@@ -1,6 +1,6 @@
 {
   "name": "obsidian-inkidian",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "private": true,
   "description": "Inkidian plugin for Obsidian",
   "main": "main.js",
@@ -19,6 +19,7 @@
     "vitest": "^5.0.3"
   },
   "dependencies": {
-    "perfect-freehand": "^1.2.3"
+    "perfect-freehand": "^1.2.3",
+    "qrcode-generator": "^2.0.4"
   }
 }

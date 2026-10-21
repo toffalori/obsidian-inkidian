@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { folderForNewNote, newInInkidianUrl, openInInkidianUrl, waitFor } from "../src/urls";
+import { folderForNewNote, newInInkidianUrl, newNoteName, openInInkidianUrl, waitFor } from "../src/urls";
 
 // The iOS tests (InkidianURLTests.swift) parse exactly these strings.
 describe("links to the iPad app", () => {
@@ -9,6 +9,14 @@ describe("links to the iPad app", () => {
     );
     expect(newInInkidianUrl("Vault", "Hand writing/Inbox")).toBe("inkidian://new?vault=Vault&folder=Hand%20writing%2FInbox");
     expect(newInInkidianUrl("Vault", "")).toBe("inkidian://new?vault=Vault&folder=");
+    expect(newInInkidianUrl("Vault", "Inbox", "Note 2026-10-19 09.05")).toBe("inkidian://new?vault=Vault&folder=Inbox&name=Note%202026-10-19%2009.05");
+  });
+
+  it("names a new note as the app does, with a number when it's taken", () => {
+    const now = new Date(2026, 9, 19, 9, 5);
+    expect(newNoteName(now, () => false)).toBe("Note 2026-10-19 09.05");
+    const taken = new Set(["Note 2026-10-19 09.05", "Note 2026-10-19 09.05 2"]);
+    expect(newNoteName(now, (name) => taken.has(name))).toBe("Note 2026-10-19 09.05 3");
   });
 
   it("puts new notes next to the active note, else into the default folder", () => {
