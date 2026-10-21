@@ -49,6 +49,11 @@
   box-shadow: var(--shadow-s);
 }
 
+/* On the desktop, above the status bar, which floats over the bottom right corner. */
+body:not(.is-mobile) .inkidian-zoom-bar {
+  bottom: 40px;
+}
+
 .inkidian-zoom-label {
   min-width: 4em;
   justify-content: center;
