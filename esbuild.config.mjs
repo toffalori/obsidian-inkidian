@@ -25,6 +25,8 @@ const context = await esbuild.context({
   ],
   format: "cjs",
   target: "es2018",
+  // Obsidian runs main.js as a script, where import("net") can't load Node's modules: make it require("net").
+  supported: { "dynamic-import": false },
   logLevel: "info",
   sourcemap: prod ? false : "inline",
   treeShaking: true,

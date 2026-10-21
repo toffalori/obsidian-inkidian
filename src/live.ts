@@ -1,16 +1,17 @@
 import { type EventRef, Events, normalizePath } from "obsidian";
-import type { ChildProcess, spawn as Spawn } from "child_process";
-import type * as Crypto from "crypto";
-import type * as Net from "net";
+// Types only: the modules themselves come from main.ts, on the desktop.
+type Net = typeof import("net");
+type Socket = import("net").Socket;
+type Crypto = typeof import("crypto");
 
 /** The longest message accepted, against a sender that never ends its line. */
 const MAX_MESSAGE = 64 * 1024 * 1024;
 
 /** Node's modules for the receiver, which only exist on the desktop. */
 export interface NodeModules {
-  net: typeof Net;
-  spawn: typeof Spawn;
-  crypto: typeof Crypto;
+  net: Net;
+  spawn: typeof import("child_process").spawn;
+  crypto: Crypto;
 }
 
 interface LiveMessage {
@@ -29,10 +30,10 @@ interface LiveMessage {
  */
 export class LiveNotes extends Events {
   private readonly notes = new Map<string, { text: string; modifiedAt: string }>();
-  private server: Net.Server | null = null;
-  private readonly sockets = new Set<Net.Socket>();
-  private advertiser: ChildProcess | null = null;
-  private crypto: typeof Crypto | null = null;
+  private server: import("net").Server | null = null;
+  private readonly sockets = new Set<Socket>();
+  private advertiser: import("child_process").ChildProcess | null = null;
+  private crypto: Crypto | null = null;
   private key: Buffer | null = null;
 
   constructor(private readonly vaultName: string) {
@@ -55,7 +56,6 @@ export class LiveNotes extends Events {
       const name = `Inkidian ${id}`;
       this.advertiser = spawn("/usr/bin/dns-sd", ["-R", name, "_inkidian._tcp", "local", String(address.port), `id=${id}`], { stdio: "ignore" });
       this.advertiser.on("error", (error) => console.error("Inkidian live preview:", error));
-      console.info(`Inkidian live preview: “${name}” on port ${address.port}`);
     });
     this.server = server;
   }
@@ -90,7 +90,7 @@ export class LiveNotes extends Events {
     return live.text;
   }
 
-  private accept(socket: Net.Socket): void {
+  private accept(socket: Socket): void {
     this.sockets.add(socket);
     socket.on("close", () => this.sockets.delete(socket));
     socket.setEncoding("utf8");
@@ -149,7 +149,7 @@ export class LiveNotes extends Events {
 }
 
 /** What the Mac announces instead of the key: the first 8 bytes of its SHA-256, in hex. */
-export function pairingId(crypto: typeof Crypto, key: Buffer): string {
+export function pairingId(crypto: Crypto, key: Buffer): string {
   return crypto.createHash("sha256").update(key).digest("hex").slice(0, 16);
 }
 

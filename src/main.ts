@@ -43,7 +43,7 @@ export default class InkidianPlugin extends Plugin {
     this.registerObsidianProtocolHandler("inkidian", (params) => void this.openFromApp(params.file));
     this.addSettingTab(new InkidianSettingTab(this.app, this));
     this.app.workspace.onLayoutReady(() => void this.showSyncNoticeOnce());
-    this.app.workspace.onLayoutReady(() => this.updateLivePreview());
+    this.app.workspace.onLayoutReady(() => void this.updateLivePreview());
     this.register(() => this.live.stop());
     // Obsidian may quit without unloading plugins; the Bonjour process must end too.
     this.registerDomEvent(window, "beforeunload", () => this.live.stop());
@@ -58,9 +58,11 @@ export default class InkidianPlugin extends Plugin {
   }
 
   /** Starts or stops the live preview from the iPad (D40). Mac only: it needs macOS's Bonjour. */
-  updateLivePreview(): void {
-    if (this.settings.livePreview && this.settings.liveKey && Platform.isDesktopApp && Platform.isMacOS) {
-      this.live.start({ net: require("net"), spawn: require("child_process").spawn, crypto: require("crypto") }, this.settings.liveKey);
+  async updateLivePreview(): Promise<void> {
+    if (Platform.isDesktop && Platform.isMacOS && this.settings.livePreview && this.settings.liveKey) {
+      const [net, { spawn }, crypto] = await Promise.all([import("net"), import("child_process"), import("crypto")]);
+      // The setting may have changed while the modules loaded.
+      if (this.settings.livePreview && this.settings.liveKey) this.live.start({ net, spawn, crypto }, this.settings.liveKey);
     } else {
       this.live.stop();
     }
@@ -71,7 +73,7 @@ export default class InkidianPlugin extends Plugin {
     this.settings.livePreview = on;
     if (on && !this.settings.liveKey) this.settings.liveKey = newPairingKey();
     await this.saveSettings();
-    this.updateLivePreview();
+    await this.updateLivePreview();
     if (on) this.showPairing();
   }
 
@@ -88,7 +90,7 @@ export default class InkidianPlugin extends Plugin {
   private async renewPairing(): Promise<void> {
     this.settings.liveKey = newPairingKey();
     await this.saveSettings();
-    this.updateLivePreview();
+    await this.updateLivePreview();
     this.showPairing();
   }
 

@@ -1,7 +1,7 @@
 {
   "id": "inkidian",
   "name": "Inkidian",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "minAppVersion": "1.1.0",
   "description": "Handwritten notes, drawings and PDF annotation with Apple Pencil, saved as files in your vault. Shows Inkidian notes and opens them in the Inkidian iPad app.",
   "author": "Thomas Toffalori",

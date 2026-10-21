@@ -18,7 +18,7 @@
 - **Your notes stay files in your vault.** Nothing to import, export or sign up for. Every note is an `.inkd` file next to your Markdown, and it syncs wherever your vault already syncs: iCloud, Obsidian Sync or anything else.
 - **PDFs and images, annotated in place.** The ink goes into the PDF as standard annotations, so Obsidian, Preview and Acrobat show it too. For images, replace the original or keep a copy.
 - **An open format.** `.inkd` is plain JSON with a public spec, so your notes stay readable, with or without Inkidian.
-- **Private.** No account, no server. The plugin makes no network requests and collects no data.
+- **Private.** No account, no server. The plugin collects no data and never connects to the internet. Only the optional live preview talks to your paired iPad, over your local network.
 
 ![An annotated wireframe image in Obsidian, with red circles and notes written in Inkidian](https://raw.githubusercontent.com/toffalori/obsidian-inkidian/main/images/annotate.jpg)
 
@@ -31,6 +31,7 @@
 - **Edit in Inkidian** (iPad): the round nib button in the top right corner of a note, and of every embedded note, opens it in the app. Back in Obsidian, the note updates on its own.
 - **Annotate in Inkidian** (iPad): the same button on PDFs and images, the file menu or a command opens them in the app. Every note that embeds the file shows the ink.
 - **New note** command (iPad): starts a new note in Inkidian, in the open note's folder or a default folder. **New note at cursor** also embeds it where the cursor is.
+- **Live preview from iPad** (Mac, experimental, off by default): what you write on the iPad shows up in Obsidian as soon as you lift the Pencil, before Sync brings the note. Turn it on in the plugin's settings and scan the QR code with your iPad. While it's on, the plugin listens on your local network and announces itself to your iPad with macOS's `dns-sd` command. Notes arrive encrypted with the pairing key and are only shown, never written to your vault.
 - **Dark mode**: dark paper with light ink, or white paper, when Obsidian uses a dark theme.
 
 ## Get started
