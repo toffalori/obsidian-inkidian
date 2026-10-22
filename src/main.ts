@@ -302,11 +302,7 @@ export default class InkidianPlugin extends Plugin {
   /** The app exists only on iPad; elsewhere explain instead (PLAN §6.3). */
   private canOpenApp(): boolean {
     if (isIPad()) return true;
-    new Notice(
-      Platform.isIosApp
-        ? "Inkidian is an iPad app. Open this vault in Obsidian on your iPad to write by hand."
-        : "Inkidian runs on iPad. Open this note in Obsidian on your iPad to edit it.",
-    );
+    new Notice("Inkidian is an iPad app, so this only works in Obsidian on your iPad.");
     return false;
   }
 

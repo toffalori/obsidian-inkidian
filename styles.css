@@ -54,6 +54,14 @@ body:not(.is-mobile) .inkidian-zoom-bar {
   bottom: 40px;
 }
 
+/* On the iPhone, the zoom bar and the end of the last page above the navigation bar,
+   which floats over the bottom of the view. Margins, as Obsidian's own views do:
+   the spacing may be a plain 0, which calc() refuses. */
+.is-phone .inkidian-zoom-bar,
+.is-phone .inkidian-pages {
+  margin-bottom: var(--view-bottom-spacing);
+}
+
 .inkidian-zoom-label {
   min-width: 4em;
   justify-content: center;
