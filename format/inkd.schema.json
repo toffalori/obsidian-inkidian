@@ -53,6 +53,26 @@
         "strokes": {
           "type": "array",
           "items": { "$ref": "#/$defs/stroke" }
+        },
+        "handwriting": { "$ref": "#/$defs/handwriting" }
+      }
+    },
+    "handwriting": {
+      "description": "Text recognized in the page's handwriting, for search (SPEC.md §5.1).",
+      "type": "object",
+      "required": ["source", "lines"],
+      "properties": {
+        "source": { "type": "string" },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["text", "box"],
+            "properties": {
+              "text": { "type": "string" },
+              "box": { "type": "array", "items": { "type": "number" }, "minItems": 4, "maxItems": 4 }
+            }
+          }
         }
       }
     },

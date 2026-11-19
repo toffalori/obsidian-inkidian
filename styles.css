@@ -155,3 +155,30 @@ body:not(.is-mobile) .inkidian-zoom-bar {
   height: 240px;
   margin: 1em auto;
 }
+
+/* A search result's line, highlighted for a moment (INK-87), under the ink.
+   A fixed see-through yellow: the paper is always white, whatever the theme. */
+.inkidian-match {
+  fill: rgba(255, 208, 0, 0.4);
+  animation: inkidian-match-fade 2.5s ease-in forwards;
+}
+
+@keyframes inkidian-match-fade {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.inkidian-search-line {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.inkidian-search-where {
+  color: var(--text-faint);
+  font-size: var(--font-ui-smaller);
+}

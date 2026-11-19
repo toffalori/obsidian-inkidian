@@ -4,6 +4,7 @@ import { isIPad } from "./platform";
 import { InkdEmbed } from "./embed";
 import { LiveNotes } from "./live";
 import { newPairingKey, PairingModal } from "./pairing";
+import { HandwritingIndex, type HandwritingMatch, HandwritingSearchModal } from "./search";
 import { DEFAULT_SETTINGS, InkidianSettingTab, type InkidianSettings } from "./settings";
 import { folderForNewNote, newInInkidianUrl, newNoteName, openInInkidianUrl, pairInInkidianUrl, waitFor } from "./urls";
 import { InkdView, VIEW_TYPE_INKD } from "./view";
@@ -24,6 +25,8 @@ export default class InkidianPlugin extends Plugin {
   private readonly savedInApp = new Map<string, number>();
   /** Notes the iPad app sends as it saves them (D40). */
   readonly live = new LiveNotes(this.app.vault.getName());
+  /** The words written in the vault's notes, for search (INK-87). */
+  private readonly handwriting = new HandwritingIndex(this.app);
 
   async onload(): Promise<void> {
     this.settings = { ...DEFAULT_SETTINGS, ...((await this.loadData()) as Partial<InkidianSettings> | null) };
@@ -38,6 +41,10 @@ export default class InkidianPlugin extends Plugin {
       icon: "inkidian",
       editorCallback: (editor, context) => this.newNoteAtCursor(editor, context.file),
     });
+    this.handwriting.register(this);
+    this.addCommand({ id: "search-handwriting", name: "Search handwritten notes", icon: "text-search", callback: () => this.searchHandwriting() });
+    // Its own icon, so it isn't mistaken for Obsidian's search, which can't read handwriting.
+    this.addRibbonIcon("text-search", "Search handwritten notes", () => this.searchHandwriting());
     this.registerAnnotateActions();
     if (isIPad()) this.versionResourcePaths();
     this.registerObsidianProtocolHandler("inkidian", (params) => void this.openFromApp(params.file));
@@ -278,6 +285,17 @@ export default class InkidianPlugin extends Plugin {
       return;
     }
     await this.app.workspace.getLeaf(false).openFile(file);
+  }
+
+  searchHandwriting(): void {
+    new HandwritingSearchModal(this.app, this.handwriting, (match) => void this.openMatch(match)).open();
+  }
+
+  /** Opens the note and shows the line (`InkdView.setEphemeralState`). */
+  private async openMatch(match: HandwritingMatch): Promise<void> {
+    const file = this.app.vault.getAbstractFileByPath(match.path);
+    if (!(file instanceof TFile)) return;
+    await this.app.workspace.getLeaf(false).openFile(file, { eState: { inkidianMatch: { page: match.page, box: match.line.box } } });
   }
 
   editInInkidian(file: TFile): void {

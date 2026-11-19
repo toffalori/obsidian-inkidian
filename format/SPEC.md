@@ -71,6 +71,7 @@ IDs (of documents, pages and strokes) are opaque, case-sensitive strings that ar
 | `id` | string | yes | Page ID. |
 | `background` | object | yes | Background pattern, see below. |
 | `strokes` | array | yes | Strokes in drawing order, so later strokes are drawn on top. May be empty. |
+| `handwriting` | object | no | The text recognized in the page's handwriting, for search. See [§5.1](#51-recognized-handwriting). |
 
 `background`:
 
@@ -86,6 +87,30 @@ The paper is white (`#FFFFFF`). The background pattern is drawn on the paper und
 - `lined`: horizontal lines at `y = k·s` for k = 1, 2, …, across the full page width, 1 pt wide.
 - `grid`: the `lined` pattern plus vertical lines at `x = k·s`, across the full page height, 1 pt wide.
 - `dots`: filled circles with a radius of 1 pt at every `(i·s, k·s)` for i, k ≥ 1.
+
+### 5.1 Recognized handwriting
+
+The iPad app reads the handwriting on each page and keeps the text in the page, so that any program can search the note without recognizing handwriting itself:
+
+```json
+"handwriting": {
+  "source": "9f2c41d07a3b8e65",
+  "lines": [
+    { "text": "Spacing beats cramming", "box": [112.5, 410, 520.25, 46.5] }
+  ]
+}
+```
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `source` | string | yes | An opaque fingerprint of the strokes the text was recognized from. |
+| `lines` | array | yes | The recognized lines in reading order. Empty when the page was read and has no text. |
+
+Each line has `text` (string) and `box`, the line's bounding box as `[x, y, width, height]` in page coordinates ([§4](#4-coordinate-system)).
+
+- The text is derived from the ink and is not content: it is never rendered, and adding or replacing it does not change `modifiedAt`.
+- Recognition can be wrong. Readers use the text to find notes and lines, not as a transcript.
+- A writer that changes a page's strokes MAY keep its `handwriting`. The text is then stale until the page is read again. The writer that recognizes the text compares `source` with its own fingerprint of the page's current strokes to tell. Readers that only show or search the text ignore `source`.
 
 ## 6. Strokes
 
@@ -203,4 +228,5 @@ Each stroke is an annotation on its page: pen and pencil strokes of subtype `/In
   - Pen width is `baseWidth · (0.25 + 1.5·p)`, which fits PencilKit's tapering.
   - For pencil and marker, `p` sets darkness instead of width.
 - **v1** (2026-10-07, M7): §9 Ink in PDF files. The `.inkd` format itself is unchanged.
+- **v1** (2026-10-22): §5.1 Recognized handwriting: the optional page field `handwriting`.
 - **v1** (2026-10-08): §9.2 Marker strokes in PDFs are `/Highlight` annotations with `/QuadPoints`, so Preview shows them like Obsidian does. Readers accept both subtypes.

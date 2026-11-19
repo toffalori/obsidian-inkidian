@@ -5,7 +5,7 @@ import { LiveNotes } from "./live";
 import type InkidianPlugin from "./main";
 import { isIPad, noticeChange } from "./platform";
 import { renderPage } from "./render";
-import { toDom } from "./svg";
+import { h, toDom } from "./svg";
 import { openInInkidianUrl } from "./urls";
 import { clampZoom, stepZoom, wheelZoom } from "./zoom";
 
@@ -15,6 +15,9 @@ let viewCount = 0;
 
 /** A point on a page, as fractions of its size: it stays put while zooming. */
 type Anchor = { page: Element; x: number; y: number };
+
+/** A search result's line: its page, from 0, and its box in page coordinates (INK-87). */
+type Match = { page: number; box: [number, number, number, number] };
 
 /** Read-only preview of an `.inkd` note (PLAN §6.2). */
 export class InkdView extends FileView {
@@ -29,6 +32,8 @@ export class InkdView extends FileView {
   private zoomLabel: HTMLElement | null = null;
   private pinch: { distance: number; zoom: number; anchor: Anchor | null } | null = null;
   private drag: { x: number; y: number; left: number; top: number } | null = null;
+  /** The search result to show once the pages are there. */
+  private match: Match | null = null;
 
   constructor(leaf: WorkspaceLeaf, private readonly plugin: InkidianPlugin) {
     super(leaf);
@@ -80,6 +85,14 @@ export class InkdView extends FileView {
 
   onResize(): void {
     this.applyZoom();
+  }
+
+  setEphemeralState(state: unknown): void {
+    super.setEphemeralState(state);
+    const match = (state as { inkidianMatch?: Match } | null)?.inkidianMatch;
+    if (!match) return;
+    this.match = match;
+    this.showMatch();
   }
 
   async onLoadFile(file: TFile): Promise<void> {
@@ -149,6 +162,27 @@ export class InkdView extends FileView {
     });
     this.pagesEl = pages;
     this.applyZoom();
+    this.showMatch();
+  }
+
+  /** Scrolls a search result's line into view and highlights it for a moment. */
+  private showMatch(): void {
+    const match = this.match;
+    const page = this.pagesEl?.children[match?.page ?? -1];
+    if (!match || !(page instanceof SVGSVGElement)) return;
+    this.match = null;
+    const [x, y, width, height] = match.box;
+    const mark = toDom(h("rect", { class: "inkidian-match", x: x - 6, y: y - 4, width: width + 12, height: height + 8, rx: 6 }));
+    page.insertBefore(mark, page.querySelector(".inkidian-ink"));
+    window.setTimeout(() => mark.remove(), 2500);
+    // After layout, so the page has its size.
+    window.requestAnimationFrame(() => {
+      const box = page.viewBox.baseVal;
+      const rect = page.getBoundingClientRect();
+      const top = rect.top + ((y - box.y) / box.height) * rect.height;
+      const view = this.contentEl.getBoundingClientRect();
+      this.contentEl.scrollTop += top - view.top - view.height / 3;
+    });
   }
 
   /**

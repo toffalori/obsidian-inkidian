@@ -21,6 +21,12 @@
         "spacing": 32,
         "color": "#D0D7E2"
       },
+      "handwriting": {
+        "source": "5b1d0c8e2f4a7391",
+        "lines": [
+          { "text": "Lined paper with handwriting", "box": [80, 70, 560, 40] }
+        ]
+      },
       "strokes": [
         {
           "id": "336cd594-24ac-4df8-8aea-0f203101f073",

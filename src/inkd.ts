@@ -38,6 +38,13 @@ export interface InkdDocument {
   pages: InkdPage[];
 }
 
+/** A line of the handwriting the iPad app recognized on a page (SPEC §5.1). */
+export interface InkdLine {
+  text: string;
+  /** x, y, width and height in page coordinates. */
+  box: [number, number, number, number];
+}
+
 export type ParseResult =
   | { ok: true; document: InkdDocument }
   | { ok: false; reason: "invalid" | "not-inkidian" | "newer-version"; message: string };
@@ -79,6 +86,29 @@ export function parseInkd(text: string): ParseResult {
     strokes: isObject(raw) && Array.isArray(raw.strokes) ? raw.strokes.flatMap(parseStroke) : [],
   }));
   return { ok: true, document: { formatVersion: version, width: page.width, height: page.height, pages } };
+}
+
+/**
+ * The recognized lines of each page, for search, without reading the ink. A page
+ * the app hasn't read yet has none. `null` if the file isn't a note.
+ */
+export function readHandwriting(text: string): InkdLine[][] | null {
+  let json: unknown;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  if (!isObject(json) || json.format !== "inkidian" || !Array.isArray(json.pages)) return null;
+  return json.pages.map((page) => {
+    const handwriting = isObject(page) ? page.handwriting : undefined;
+    const lines: unknown[] = isObject(handwriting) && Array.isArray(handwriting.lines) ? handwriting.lines : [];
+    return lines.flatMap((line) => (isObject(line) && typeof line.text === "string" && isBox(line.box) ? [{ text: line.text, box: line.box }] : []));
+  });
+}
+
+function isBox(value: unknown): value is [number, number, number, number] {
+  return Array.isArray(value) && value.length === 4 && value.every(isFiniteNumber);
 }
 
 function parseBackground(raw: unknown): InkdBackground {
